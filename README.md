@@ -1,378 +1,251 @@
-# Game Server Exporter para Prometheus
+# Prometheus + Grafana Monitoring Stack
 
-Exporter do Prometheus para monitorar servidores de jogos usando o pacote [gamedig](https://github.com/gamedig/node-gamedig).
+Complete monitoring stack with Prometheus and Grafana for game servers, Linux/Windows servers, processes, Docker containers, and ICMP monitoring.
 
-## Estrutura do Projeto
+## 🚀 Features
+
+### Game Server Monitoring
+- Support for over 100 game types via [gamedig](https://github.com/gamedig/node-gamedig)
+- Metrics for online players, latency, status, and errors
+- Dedicated dashboards in Grafana
+
+### Infrastructure Monitoring
+- **Linux Servers**: CPU, memory, disk, network via Node Exporter
+- **Windows Servers**: CPU, memory, disk, network via Windows Exporter
+- **Processes**: Detailed monitoring of individual processes (Linux via Process Exporter)
+- **Docker Containers**: Monitoring via cAdvisor
+- **ICMP/Ping**: Network connectivity monitoring
+
+### Alerts
+- AlertManager configured to manage alerts
+- Alert rules for game servers and ICMP
+- Configurable notifications
+
+### Grafana Dashboards
+- **Game Servers**: Game server monitoring (general and per server)
+- **Server Monitoring**: Linux/Windows server monitoring (general and per server)
+- **ICMP Monitoring**: Network connectivity monitoring
+
+## 📁 Project Structure
 
 ```
-gs_exporter/
-├── docker-compose.yml          # Stack completa (Prometheus + Exporter)
-├── prometheus/                  # Configuração do Prometheus
-│   ├── prometheus.yml          # Configuração principal
-│   ├── rules/                  # Regras de alertas
-│   │   └── game-servers.yml    # Alertas para servidores de jogos
-│   └── alerts/                 # Alertas adicionais (opcional)
-├── gs_exporter/                # Código do exporter
-│   ├── index.js                # Código principal
-│   ├── package.json            # Dependências Node.js
-│   ├── Dockerfile              # Imagem Docker do exporter
-│   └── docker-compose.yml      # Para rodar apenas o exporter
-└── README.md                   # Este arquivo
+.
+├── docker-compose.yml              # Complete stack (Prometheus + Grafana + Exporters)
+├── prometheus/                     # Prometheus configuration
+│   ├── prometheus.yml             # Main configuration
+│   ├── alertmanager.yml          # AlertManager configuration
+│   ├── blackbox.yml              # Blackbox Exporter configuration
+│   ├── targets/                   # JSON files with targets (Service Discovery)
+│   │   ├── targets.json          # Game servers
+│   │   ├── linux-targets.json    # Linux servers (Node Exporter)
+│   │   ├── windows-targets.json  # Windows servers (Windows Exporter)
+│   │   ├── process-exporter-targets.json  # Process Exporter
+│   │   ├── cadvisor-targets.json # cAdvisor (Docker containers)
+│   │   └── icmp-targets.json     # ICMP targets (ping)
+│   ├── rules/                    # Alert rules
+│   │   ├── game-servers.yml     # Alerts for game servers
+│   │   └── icmp.yml              # Alerts for ICMP
+│   └── README.md                 # Prometheus documentation
+├── grafana/                      # Grafana configuration
+│   ├── dashboards/               # JSON dashboards
+│   │   ├── game-servers.json                    # General game servers dashboard
+│   │   ├── game-servers-per-server.json         # Per game server dashboard
+│   │   ├── servers-monitoring.json              # General servers dashboard
+│   │   ├── servers-monitoring-per-server.json   # Per server dashboard
+│   │   └── icmp-monitoring.json                 # ICMP dashboard
+│   ├── provisioning/            # Automatic provisioning
+│   │   ├── datasources/         # Datasources (Prometheus)
+│   │   └── dashboards/          # Dashboard configuration
+│   └── README.md                # Grafana documentation
+├── gs_exporter/                  # Game Server Exporter
+│   ├── index.js                 # Main code
+│   ├── package.json             # Node.js dependencies
+│   ├── Dockerfile               # Docker image
+│   └── docker-compose.yml       # To run only the exporter
+├── scripts/                     # Installation scripts
+│   ├── install-node-exporter.sh        # Node Exporter installation (Linux)
+│   ├── install-process-exporter.sh     # Process Exporter installation (Linux)
+│   ├── install-cadvisor.sh             # cAdvisor installation (Linux)
+│   ├── install-window-exporter.ps1     # Windows Exporter installation
+│   └── README-*.md                      # Script documentation
+└── README.md                     # This file
 ```
 
-## Início Rápido com Docker
+## 🚀 Quick Start
 
-### Opção 1: Stack Completa (Prometheus + Exporter)
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Access to servers that will be monitored (to install exporters)
+
+### 1. Clone the repository
 
 ```bash
-# 1. Configure seus servidores em prometheus/prometheus.yml
-# 2. Inicie tudo com docker-compose
+git clone https://github.com/joaocaldas/prometheus_grafana_monitoring.git
+cd prometheus_grafana_monitoring
+```
+
+### 2. Configure targets
+
+Targets are configured through JSON files in the `prometheus/targets/` folder. See the [Prometheus documentation](prometheus/README.md) for examples of each target type.
+
+**Important:** The `prometheus/targets/*.json` files are in `.gitignore` because they contain sensitive information. You need to create them manually or copy from examples.
+
+### 3. Start the stack
+
+```bash
 docker-compose up -d
-
-# 3. Acesse:
-# - Prometheus: http://localhost:9090
-# - Métricas do exporter: http://localhost:9091/metrics
 ```
 
-### Opção 2: Apenas o Exporter
+### 4. Access services
 
-```bash
-# Entre na pasta do exporter
-cd gs_exporter
+- **Grafana**: http://localhost:3001
+  - User: `admin`
+  - Password: `admin` (you will be prompted to change it on first login)
+- **Prometheus**: http://localhost:9090
+- **AlertManager**: http://localhost:9093
+- **Game Server Exporter**: http://localhost:9091/metrics
 
-# Inicie apenas o exporter
-docker-compose up -d
-```
+### 5. Install exporters on servers
 
-## Funcionalidades
+See the scripts in the `scripts/` folder to install the necessary exporters:
 
-- Consulta informações de servidores de jogos usando gamedig
-- Expõe métricas do Prometheus em `/metrics`
-- Suporta múltiplos servidores simultaneamente
-- Métricas incluem:
-  - Número de jogadores online
-  - Número máximo de jogadores
-  - Número de bots
-  - Latência (ping)
-  - Status online/offline
-  - Contador de erros de consulta
+- **Linux**: Node Exporter, Process Exporter, cAdvisor
+- **Windows**: Windows Exporter
 
-## Instalação
+## 📊 Dashboards
 
-### Instalação Local
+### Game Servers Monitoring
 
-```bash
-npm install
-```
+- **General Dashboard**: Overview of all game servers
+- **Per Server Dashboard**: Individual details for each server
 
-### Instalação via Docker
+**Available metrics:**
+- Online/maximum players
+- Latency (ping)
+- Online/offline status
+- Number of bots
+- Query error rate
 
-```bash
-# Usar docker-compose (inclui Prometheus)
-docker-compose up -d
+### Server Monitoring
 
-# Ou build da imagem manualmente
-docker build -t gs-exporter .
-```
+- **General Dashboard**: Overview of all servers (Linux/Windows)
+- **Per Server Dashboard**: Individual details for each server
 
-## Uso
+**Available metrics:**
+- CPU, memory, disk
+- Network traffic
+- Processes (Linux and Windows)
+- Docker containers (via cAdvisor)
+- Uptime
 
-### Configuração via Variável de Ambiente
+### ICMP Monitoring
 
-Configure os servidores usando a variável de ambiente `GAME_SERVERS`:
+- Network connectivity monitoring via ping
+- Alerts when hosts go offline
 
-```bash
-export GAME_SERVERS='[
+## ⚙️ Configuration
+
+### Game Server Exporter
+
+Game servers are configured in `prometheus/targets/targets.json`:
+
+```json
+[
   {
-    "name": "cs2-server-1",
-    "type": "cs2",
-    "host": "localhost",
-    "port": 27015
-  },
-  {
-    "name": "minecraft-server-1",
-    "type": "minecraft",
-    "host": "minecraft.example.com",
-    "port": 25565
+    "targets": ["SERVER_IP:PORT"],
+    "labels": {
+      "gamedig-type": "cod2",
+      "exporter": "game-server"
+    }
   }
-]'
+]
 ```
 
-### Variáveis de Ambiente Disponíveis
+The exporter reads this file automatically and queries servers when Prometheus scrapes.
 
-- `GAME_SERVERS`: JSON array com configuração dos servidores (padrão: servidor CS2 local)
-- `PORT`: Porta do servidor HTTP (padrão: 9090). **Nota:** Se o Prometheus já estiver usando 9090, configure `PORT=9091`
-- `SCRAPE_INTERVAL`: Intervalo de consulta em milissegundos (padrão: 30000 = 30 segundos)
+**Supported game types:** See the complete list at https://github.com/gamedig/node-gamedig#games-list
 
-### Executar
+### Other Targets
+
+See `prometheus/README.md` for configuration examples of:
+- Linux servers (Node Exporter)
+- Windows servers (Windows Exporter)
+- Process Exporter
+- cAdvisor
+- ICMP targets
+
+## 🔧 Environment Variables
+
+### Game Server Exporter
+
+- `PORT`: HTTP server port (default: 9090)
+- `SCRAPE_INTERVAL`: Query interval in milliseconds (default: 30000)
+- `TARGETS_JSON_FILE`: Path to targets JSON file (default: `/etc/prometheus/targets/targets.json`)
+
+### Grafana
+
+- `GF_SECURITY_ADMIN_USER`: Admin user (default: `admin`)
+- `GF_SECURITY_ADMIN_PASSWORD`: Admin password (default: `admin`)
+- `GF_SERVER_ROOT_URL`: Grafana base URL (default: `http://localhost:3001`)
+
+## 📝 Reload Configuration
+
+After modifying configuration files, you can reload without restarting:
 
 ```bash
-npm start
+# Reload Prometheus
+curl -X POST http://localhost:9090/-/reload
+
+# Or restart containers
+docker-compose restart prometheus
 ```
 
-Ou em modo desenvolvimento com auto-reload:
+## 🐳 Docker Compose
+
+The stack includes the following services:
+
+- **prometheus**: Collects and stores metrics
+- **grafana**: Visualization and dashboards
+- **game-server-exporter**: Exporter for game servers
+- **blackbox-exporter**: ICMP monitoring
+- **alertmanager**: Alert management
+
+### Useful commands
 
 ```bash
-npm run dev
-```
-
-## Tipos de Jogos Suportados
-
-O gamedig suporta mais de 100 tipos de jogos. Veja a lista completa em: https://github.com/gamedig/node-gamedig#games-list
-
-Alguns exemplos populares:
-- `cs2` - Counter-Strike 2
-- `csgo` - Counter-Strike: Global Offensive
-- `minecraft` - Minecraft
-- `tf2` - Team Fortress 2
-- `rust` - Rust
-- `ark` - ARK: Survival Evolved
-- `valheim` - Valheim
-- E muitos outros...
-
-## Endpoints
-
-- `GET /metrics` - Métricas do Prometheus
-- `GET /health` - Health check
-
-## Arquitetura
-
-### Como funciona
-
-**Importante:** O Prometheus faz scrape do **exporter** (não dos servidores de jogos diretamente). Os servidores de jogos podem ser configurados de duas formas:
-
-1. **Via query parameters no `prometheus.yml`** (recomendado) - cada servidor como um target separado
-2. **Via variável de ambiente `GAME_SERVERS`** - servidores padrão consultados periodicamente
-
-**Fluxo de dados:**
-```
-Servidores de Jogos → Game Server Exporter → Prometheus → Grafana
-     (gamedig)         (express + /metrics)   (scrape)    (visualização)
-```
-
-**Passo a passo:**
-1. Você configura os servidores de jogos no `prometheus.yml` via query parameters OU no exporter via `GAME_SERVERS`
-2. O exporter consulta os servidores usando gamedig quando o Prometheus faz scrape (ou periodicamente para servidores padrão)
-3. O exporter expõe métricas em `/metrics` (endpoint HTTP)
-4. O Prometheus faz scrape do exporter (a cada `scrape_interval` configurado)
-5. O Prometheus armazena as métricas e você pode visualizar no Grafana
-
-## Configuração do Prometheus
-
-### Método 1: Configuração via Query Parameters (Recomendado)
-
-Configure cada servidor de jogo diretamente no `prometheus.yml` usando query parameters na URL do target:
-
-```yaml
-global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
-
-scrape_configs:
-  # Métricas do próprio Prometheus
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
-
-  # Game Server Exporter
-  # Configure cada servidor como um target separado com query parameters
-  - job_name: 'game-servers'
-    scrape_interval: 30s
-    static_configs:
-      # Servidor Quake 3
-      - targets: ['localhost:9091?host=127.0.0.1&port=28960&type=quake3&name=quake3-server']
-        labels:
-          server-ip: '127.0.0.1'
-          server-port: '28960'
-          gamedig-type: 'quake3'
-          exporter: 'game-server'
-      
-      # Servidor CS2
-      - targets: ['localhost:9091?host=192.168.1.100&port=27015&type=cs2&name=cs2-server']
-        labels:
-          server-ip: '192.168.1.100'
-          server-port: '27015'
-          gamedig-type: 'cs2'
-          exporter: 'game-server'
-      
-      # Servidor Minecraft
-      - targets: ['localhost:9091?host=minecraft.example.com&port=25565&type=minecraft&name=minecraft-server']
-        labels:
-          server-ip: 'minecraft.example.com'
-          server-port: '25565'
-          gamedig-type: 'minecraft'
-          exporter: 'game-server'
-    metrics_path: '/metrics'
-```
-
-**Parâmetros de query disponíveis:**
-- `host` (obrigatório): IP ou hostname do servidor de jogo
-- `port` (obrigatório): Porta do servidor de jogo
-- `type` (obrigatório): Tipo do jogo conforme gamedig (cs2, quake3, minecraft, etc.)
-- `name` (opcional): Nome do servidor (padrão: `{type}-{host}-{port}`)
-
-**Vantagens deste método:**
-- Configuração centralizada no Prometheus
-- Fácil adicionar/remover servidores
-- Labels personalizados por servidor
-- Cada servidor consultado apenas quando o Prometheus faz scrape
-
-### Método 2: Configuração via Variável de Ambiente
-
-Configure os servidores no exporter via variável de ambiente `GAME_SERVERS`:
-
-```bash
-export GAME_SERVERS='[
-  {
-    "name": "cs2-server-1",
-    "type": "cs2",
-    "host": "192.168.1.100",
-    "port": 27015
-  },
-  {
-    "name": "minecraft-server-1",
-    "type": "minecraft",
-    "host": "minecraft.example.com",
-    "port": 25565
-  }
-]'
-npm start
-```
-
-E no `prometheus.yml`:
-
-```yaml
-scrape_configs:
-  - job_name: 'game-servers'
-    scrape_interval: 30s
-    static_configs:
-      - targets: ['localhost:9091']
-    metrics_path: '/metrics'
-```
-
-**Nota:** Com este método, os servidores são consultados periodicamente pelo exporter (a cada `SCRAPE_INTERVAL` ms), independente do scrape do Prometheus.
-
-## Executando com Docker
-
-### Usando Docker Compose (Recomendado)
-
-O `docker-compose.yml` inclui tanto o exporter quanto o Prometheus configurados e prontos para uso.
-
-1. Edite o `prometheus.yml` para configurar seus servidores de jogos (veja seção de configuração abaixo)
-2. Inicie os containers:
-
-```bash
+# Start all services
 docker-compose up -d
-```
 
-3. Verifique os logs:
-
-```bash
-# Logs de todos os serviços
+# View logs
 docker-compose logs -f
 
-# Logs apenas do exporter
-docker-compose logs -f game-server-exporter
+# Stop all services
+docker-compose down
 
-# Logs apenas do Prometheus
-docker-compose logs -f prometheus
+# Restart a specific service
+docker-compose restart grafana
+
+# View service status
+docker-compose ps
 ```
 
-4. Acesse os serviços:
-   - **Métricas do exporter**: `http://localhost:9091/metrics`
-   - **Interface do Prometheus**: `http://localhost:9090`
-   - **Health check do exporter**: `http://localhost:9091/health`
+## 📚 Additional Documentation
 
-5. Configure seus servidores de jogos no `prometheus.yml` (veja seção de configuração)
+- [Prometheus Documentation](prometheus/README.md) - Target and alert configuration
+- [Grafana Documentation](grafana/README.md) - Dashboard configuration
+- [Installation Scripts](scripts/) - Scripts to install exporters on servers
 
-### Usando Docker diretamente
+## 🔒 Security
 
-```bash
-# Build da imagem
-docker build -t gs-exporter .
+- The `prometheus/targets/*.json` files contain sensitive information and are in `.gitignore`
+- Change the default Grafana password on first login
+- Configure firewall appropriately to expose only necessary ports
 
-# Executar o container
-docker run -d \
-  --name gs-exporter \
-  -p 9091:9090 \
-  -e PORT=9090 \
-  -e SCRAPE_INTERVAL=30000 \
-  --restart unless-stopped \
-  gs-exporter
-```
-
-### Configuração de Rede Docker
-
-**Importante:** Se os servidores de jogos estiverem na rede local (host), você pode precisar usar `network_mode: host`:
-
-**Opção 1:** Usar o arquivo alternativo `docker-compose.host-network.yml`:
-
-```bash
-docker-compose -f docker-compose.host-network.yml up -d
-```
-
-**Opção 2:** Modificar o `docker-compose.yml` para usar `network_mode: host` (descomente a linha no arquivo)
-
-**Opção 3:** Usar `--network host` no docker run:
-
-```bash
-docker run -d --network host --name gs-exporter gs-exporter
-```
-
-**Nota:** Com `network_mode: host`, não é necessário mapear portas (`ports`), pois o container usa a rede do host diretamente. Isso permite que o exporter acesse servidores de jogos na rede local usando endereços como `127.0.0.1` ou `192.168.x.x`.
-
-### Acessando Servidores de Jogos do Docker
-
-Quando o exporter está rodando no Docker e precisa acessar servidores de jogos:
-
-**Se os servidores estão no mesmo host:**
-- Use `host.docker.internal` no `prometheus.yml` para acessar serviços no host
-- Exemplo: `host=host.docker.internal&port=28960`
-
-**Se os servidores estão na rede local:**
-- Use o IP real do servidor (ex: `192.168.1.100`)
-- Certifique-se de que a rede Docker permite acesso à rede local
-
-**Se os servidores estão em outro container Docker:**
-- Use o nome do serviço do docker-compose ou o IP do container
-- Exemplo: `host=game-server-container&port=27015`
-
-### Variáveis de Ambiente no Docker
-
-Você pode configurar servidores padrão via variável de ambiente:
-
-```bash
-docker run -d \
-  --name gs-exporter \
-  -p 9091:9090 \
-  -e GAME_SERVERS='[{"name":"cs2-server","type":"cs2","host":"192.168.1.100","port":27015}]' \
-  gs-exporter
-```
-
-Ou no `docker-compose.yml`:
-
-```yaml
-environment:
-  - GAME_SERVERS=[{"name":"cs2-server","type":"cs2","host":"192.168.1.100","port":27015}]
-```
-
-## Exemplo de Métricas
-
-```
-# HELP game_server_players_current Número atual de jogadores no servidor
-# TYPE game_server_players_current gauge
-game_server_players_current{game="cs2",host="localhost",port="27015",server_name="cs2-server-1"} 12
-
-# HELP game_server_players_max Número máximo de jogadores no servidor
-# TYPE game_server_players_max gauge
-game_server_players_max{game="cs2",host="localhost",port="27015",server_name="cs2-server-1"} 20
-
-# HELP game_server_online Se o servidor está online (1) ou offline (0)
-# TYPE game_server_online gauge
-game_server_online{game="cs2",host="localhost",port="27015",server_name="cs2-server-1"} 1
-```
-
-## Licença
+## 📄 License
 
 MIT
 
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues or pull requests.

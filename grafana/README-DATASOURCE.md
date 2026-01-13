@@ -1,31 +1,31 @@
-# Configuração do Datasource Prometheus
+# Prometheus Datasource Configuration
 
-O provisionamento automático do datasource foi desabilitado para evitar erros de inicialização do Grafana.
+Automatic datasource provisioning has been disabled to avoid Grafana initialization errors.
 
-## Opção 1: Adicionar via Interface Web (Recomendado)
+## Option 1: Add via Web Interface (Recommended)
 
-1. Acesse o Grafana: http://localhost:3001
-2. Faça login com:
-   - Usuário: `admin`
-   - Senha: `admin`
-3. Vá em **Configuration → Data Sources**
-4. Clique em **Add data source**
-5. Selecione **Prometheus**
+1. Access Grafana: http://localhost:3001
+2. Login with:
+   - User: `admin`
+   - Password: `admin`
+3. Go to **Configuration → Data Sources**
+4. Click **Add data source**
+5. Select **Prometheus**
 6. Configure:
    - **URL**: `http://prometheus:9090`
    - **Access**: `Server (default)`
-   - Marque **Set as default**
-7. Clique em **Save & Test**
+   - Check **Set as default**
+7. Click **Save & Test**
 
-## Opção 2: Adicionar via API
+## Option 2: Add via API
 
-Execute o script após o Grafana estar rodando:
+Run the script after Grafana is running:
 
 ```bash
 ./grafana/setup-datasource.sh
 ```
 
-Ou manualmente via curl:
+Or manually via curl:
 
 ```bash
 curl -X POST \
@@ -47,17 +47,16 @@ curl -X POST \
   http://localhost:3001/api/datasources
 ```
 
-## Habilitar Provisionamento Automático (Futuro)
+## Enable Automatic Provisioning (Future)
 
-Depois que tudo estiver funcionando, você pode reabilitar o provisionamento automático:
+After everything is working, you can re-enable automatic provisioning:
 
-1. Copie o arquivo de backup:
+1. Copy the backup file:
    ```bash
    cp grafana/provisioning/datasources/prometheus.yml.bak grafana/provisioning/datasources/prometheus.yml
    ```
 
-2. Reinicie o Grafana:
+2. Restart Grafana:
    ```bash
    docker compose restart grafana
    ```
-

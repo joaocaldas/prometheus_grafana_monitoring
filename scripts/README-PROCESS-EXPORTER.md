@@ -1,28 +1,28 @@
-# Instalação do Process Exporter no Servidor 10.0.0.250
+# Process Exporter Installation on Server 10.0.0.250
 
-Este guia explica como instalar o Process Exporter no servidor remoto para monitorar o processo "wings".
+This guide explains how to install Process Exporter on a remote server to monitor the "wings" process.
 
-## Instalação Automática (Recomendado)
+## Automatic Installation (Recommended)
 
-Execute o script de instalação no servidor remoto:
+Run the installation script on the remote server:
 
 ```bash
-# No servidor 10.0.0.250
+# On server 10.0.0.250
 sudo bash install-process-exporter.sh
 ```
 
-O script irá:
-- ✅ Baixar e instalar o Process Exporter
-- ✅ Criar usuário e grupo dedicados
-- ✅ Criar arquivo de configuração para monitorar "wings"
-- ✅ Configurar como serviço systemd
-- ✅ Habilitar para iniciar no boot
+The script will:
+- ✅ Download and install Process Exporter
+- ✅ Create dedicated user and group
+- ✅ Create configuration file to monitor "wings"
+- ✅ Configure as systemd service
+- ✅ Enable to start on boot
 
-## Instalação Manual
+## Manual Installation
 
-Se preferir fazer manualmente:
+If you prefer to do it manually:
 
-### 1. Baixar e Instalar
+### 1. Download and Install
 
 ```bash
 cd /tmp
@@ -32,24 +32,24 @@ cd process-exporter-0.8.0.linux-amd64
 sudo cp process-exporter /usr/local/bin/
 ```
 
-### 2. Criar Usuário
+### 2. Create User
 
 ```bash
 sudo useradd --no-create-home --shell /bin/false process_exporter
 ```
 
-### 3. Criar Arquivo de Configuração
+### 3. Create Configuration File
 
 ```bash
 sudo mkdir -p /etc/process-exporter
 sudo tee /etc/process-exporter/config.yml > /dev/null <<EOF
 process_names:
-  # Monitorar o processo "wings"
+  # Monitor "wings" process
   - name: "wings"
     cmdline:
     - 'wings'
   
-  # Monitorar outros processos do sistema
+  # Monitor other system processes
   - name: "system"
     cmdline:
     - '.+'
@@ -57,7 +57,7 @@ EOF
 sudo chown process_exporter:process_exporter /etc/process-exporter/config.yml
 ```
 
-### 4. Criar Serviço Systemd
+### 4. Create Systemd Service
 
 ```bash
 sudo tee /etc/systemd/system/process-exporter.service > /dev/null <<EOF
@@ -79,7 +79,7 @@ WantedBy=multi-user.target
 EOF
 ```
 
-### 5. Habilitar e Iniciar
+### 5. Enable and Start
 
 ```bash
 sudo systemctl daemon-reload
@@ -87,60 +87,60 @@ sudo systemctl enable process-exporter
 sudo systemctl start process-exporter
 ```
 
-## Verificar Instalação
+## Verify Installation
 
 ```bash
-# Verificar status
+# Check status
 sudo systemctl status process-exporter
 
-# Verificar se está respondendo
+# Verify it's responding
 curl http://localhost:9256/metrics | grep wings
 
-# Ver logs
+# View logs
 sudo journalctl -u process-exporter -f
 ```
 
-## Configuração do Firewall
+## Firewall Configuration
 
-Certifique-se de que a porta 9256 está aberta para o Prometheus:
+Make sure port 9256 is open for Prometheus:
 
 ```bash
 # UFW
-sudo ufw allow from <IP_DO_PROMETHEUS> to any port 9256
+sudo ufw allow from <PROMETHEUS_IP> to any port 9256
 
 # Firewalld
-sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="<IP_DO_PROMETHEUS>" port protocol="tcp" port="9256" accept'
+sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="<PROMETHEUS_IP>" port protocol="tcp" port="9256" accept'
 sudo firewall-cmd --reload
 
 # iptables
-sudo iptables -A INPUT -p tcp -s <IP_DO_PROMETHEUS> --dport 9256 -j ACCEPT
+sudo iptables -A INPUT -p tcp -s <PROMETHEUS_IP> --dport 9256 -j ACCEPT
 ```
 
-## Métricas Disponíveis
+## Available Metrics
 
-Após a instalação, você poderá usar estas queries no Grafana:
+After installation, you can use these queries in Grafana:
 
 ```promql
-# CPU usado pelo processo wings (em segundos)
+# CPU used by wings process (in seconds)
 rate(namedprocess_namegroup_cpu_seconds_total{groupname="wings"}[5m])
 
-# Memória usada pelo processo wings (em bytes)
+# Memory used by wings process (in bytes)
 namedprocess_namegroup_memory_bytes{groupname="wings"}
 
-# Número de processos wings rodando
+# Number of wings processes running
 namedprocess_namegroup_num_procs{groupname="wings"}
 ```
 
-## Editar Configuração
+## Edit Configuration
 
-Para adicionar mais processos ao monitoramento:
+To add more processes to monitoring:
 
 ```bash
 sudo nano /etc/process-exporter/config.yml
 sudo systemctl restart process-exporter
 ```
 
-Exemplo de configuração com múltiplos processos:
+Example configuration with multiple processes:
 
 ```yaml
 process_names:
@@ -159,43 +159,42 @@ process_names:
 
 ## Troubleshooting
 
-### Process Exporter não inicia
+### Process Exporter won't start
 
 ```bash
-# Verificar logs
+# Check logs
 sudo journalctl -u process-exporter -n 50
 
-# Verificar permissões
+# Check permissions
 ls -la /usr/local/bin/process-exporter
 ls -la /etc/process-exporter/config.yml
 
-# Testar manualmente
+# Test manually
 sudo -u process_exporter /usr/local/bin/process-exporter -config.path=/etc/process-exporter/config.yml
 ```
 
-### Não consegue acessar métricas
+### Can't access metrics
 
 ```bash
-# Verificar se está rodando
+# Check if it's running
 sudo systemctl status process-exporter
 
-# Verificar porta
+# Check port
 sudo netstat -tlnp | grep 9256
 
-# Testar localmente
+# Test locally
 curl http://localhost:9256/metrics
 ```
 
-### Processo "wings" não aparece nas métricas
+### "wings" process doesn't appear in metrics
 
 ```bash
-# Verificar se o processo está rodando
+# Check if process is running
 ps aux | grep wings
 
-# Verificar configuração
+# Check configuration
 cat /etc/process-exporter/config.yml
 
-# Verificar métricas brutas
+# Check raw metrics
 curl http://localhost:9256/metrics | grep wings
 ```
-

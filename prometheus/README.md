@@ -1,37 +1,37 @@
-# Configuração do Prometheus
+# Prometheus Configuration
 
-Esta pasta contém todos os arquivos de configuração do Prometheus.
+This folder contains all Prometheus configuration files.
 
-## Estrutura
+## Structure
 
-- `prometheus.yml` - Arquivo principal de configuração do Prometheus
-- `targets/` - Arquivos JSON com os targets para monitoramento
-  - `linux-targets.json` - Servidores Linux (Node Exporter)
-  - `windows-targets.json` - Servidores Windows (Windows Exporter)
-  - `process-exporter-targets.json` - Servidores com Process Exporter
-  - `cadvisor-targets.json` - Servidores com cAdvisor (monitoramento de containers)
-  - `icmp-targets.json` - Targets para monitoramento ICMP (ping)
-  - `targets.json` - Servidores de jogos (Game Server Exporter)
-- `rules/` - Regras de alertas e recording rules
-  - `game-servers.yml` - Regras de alertas para servidores de jogos
-- `alerts/` - Arquivos de alertas adicionais (opcional)
+- `prometheus.yml` - Main Prometheus configuration file
+- `targets/` - JSON files with monitoring targets
+  - `linux-targets.json` - Linux servers (Node Exporter)
+  - `windows-targets.json` - Windows servers (Windows Exporter)
+  - `process-exporter-targets.json` - Servers with Process Exporter
+  - `cadvisor-targets.json` - Servers with cAdvisor (container monitoring)
+  - `icmp-targets.json` - Targets for ICMP monitoring (ping)
+  - `targets.json` - Game servers (Game Server Exporter)
+- `rules/` - Alert and recording rules
+  - `game-servers.yml` - Alert rules for game servers
+- `alerts/` - Additional alert files (optional)
 
-## Configuração
+## Configuration
 
-### Adicionar Targets
+### Adding Targets
 
-Os targets são configurados através de arquivos JSON na pasta `targets/`. O Prometheus usa Service Discovery (file_sd) para ler esses arquivos automaticamente.
+Targets are configured through JSON files in the `targets/` folder. Prometheus uses Service Discovery (file_sd) to read these files automatically.
 
-#### 1. Servidores Linux (Node Exporter)
+#### 1. Linux Servers (Node Exporter)
 
-Edite `targets/linux-targets.json`:
+Edit `targets/linux-targets.json`:
 
 ```json
 [
   {
-    "targets": ["IP_DO_SERVIDOR:9100"],
+    "targets": ["SERVER_IP:9100"],
     "labels": {
-      "name": "NOME_DO_SERVIDOR",
+      "name": "SERVER_NAME",
       "os": "linux",
       "environment": "production"
     }
@@ -39,7 +39,7 @@ Edite `targets/linux-targets.json`:
 ]
 ```
 
-**Exemplo:**
+**Example:**
 ```json
 [
   {
@@ -61,16 +61,16 @@ Edite `targets/linux-targets.json`:
 ]
 ```
 
-#### 2. Servidores Windows (Windows Exporter)
+#### 2. Windows Servers (Windows Exporter)
 
-Edite `targets/windows-targets.json`:
+Edit `targets/windows-targets.json`:
 
 ```json
 [
   {
-    "targets": ["IP_DO_SERVIDOR:9182"],
+    "targets": ["SERVER_IP:9182"],
     "labels": {
-      "name": "NOME_DO_SERVIDOR",
+      "name": "SERVER_NAME",
       "os": "windows",
       "environment": "production"
     }
@@ -78,7 +78,7 @@ Edite `targets/windows-targets.json`:
 ]
 ```
 
-**Exemplo:**
+**Example:**
 ```json
 [
   {
@@ -94,14 +94,14 @@ Edite `targets/windows-targets.json`:
 
 #### 3. Process Exporter (Linux)
 
-Edite `targets/process-exporter-targets.json`:
+Edit `targets/process-exporter-targets.json`:
 
 ```json
 [
   {
-    "targets": ["IP_DO_SERVIDOR:9256"],
+    "targets": ["SERVER_IP:9256"],
     "labels": {
-      "name": "NOME_DO_SERVIDOR",
+      "name": "SERVER_NAME",
       "os": "linux",
       "environment": "production",
       "exporter": "process"
@@ -110,7 +110,7 @@ Edite `targets/process-exporter-targets.json`:
 ]
 ```
 
-**Exemplo:**
+**Example:**
 ```json
 [
   {
@@ -125,16 +125,16 @@ Edite `targets/process-exporter-targets.json`:
 ]
 ```
 
-#### 4. cAdvisor (Monitoramento de Containers Docker)
+#### 4. cAdvisor (Docker Container Monitoring)
 
-Edite `targets/cadvisor-targets.json`:
+Edit `targets/cadvisor-targets.json`:
 
 ```json
 [
   {
-    "targets": ["IP_DO_SERVIDOR:9098"],
+    "targets": ["SERVER_IP:9098"],
     "labels": {
-      "server_name": "NOME_DO_SERVIDOR",
+      "server_name": "SERVER_NAME",
       "os": "linux",
       "environment": "production",
       "exporter": "cadvisor"
@@ -143,9 +143,9 @@ Edite `targets/cadvisor-targets.json`:
 ]
 ```
 
-**Nota:** Use `server_name` ao invés de `name` para evitar conflito com o label `name` das métricas do cAdvisor (que representa o nome do container).
+**Note:** Use `server_name` instead of `name` to avoid conflict with the `name` label from cAdvisor metrics (which represents the container name).
 
-**Exemplo:**
+**Example:**
 ```json
 [
   {
@@ -160,23 +160,23 @@ Edite `targets/cadvisor-targets.json`:
 ]
 ```
 
-#### 5. Monitoramento ICMP (Ping)
+#### 5. ICMP Monitoring (Ping)
 
-Edite `targets/icmp-targets.json`:
+Edit `targets/icmp-targets.json`:
 
 ```json
 [
   {
-    "targets": ["IP_OU_HOSTNAME"],
+    "targets": ["IP_OR_HOSTNAME"],
     "labels": {
-      "name": "NOME_DESCRITIVO",
+      "name": "DESCRIPTIVE_NAME",
       "type": "dns|cloud|bu"
     }
   }
 ]
 ```
 
-**Exemplo:**
+**Example:**
 ```json
 [
   {
@@ -196,23 +196,23 @@ Edite `targets/icmp-targets.json`:
 ]
 ```
 
-#### 6. Servidores de Jogos (Game Server Exporter)
+#### 6. Game Servers (Game Server Exporter)
 
-Edite `targets/targets.json`:
+Edit `targets/targets.json`:
 
 ```json
 [
   {
-    "targets": ["IP_DO_SERVIDOR:PORTA"],
+    "targets": ["SERVER_IP:PORT"],
     "labels": {
-      "gamedig-type": "TIPO_DO_JOGO",
+      "gamedig-type": "GAME_TYPE",
       "exporter": "game-server"
     }
   }
 ]
 ```
 
-**Exemplo:**
+**Example:**
 ```json
 [
   {
@@ -232,31 +232,31 @@ Edite `targets/targets.json`:
 ]
 ```
 
-### Regras de Alertas
+### Alert Rules
 
-As regras de alertas estão em `rules/game-servers.yml`. Você pode:
+Alert rules are in `rules/game-servers.yml`. You can:
 
-1. Editar as regras existentes
-2. Adicionar novas regras ao mesmo arquivo
-3. Criar novos arquivos `.yml` na pasta `rules/`
+1. Edit existing rules
+2. Add new rules to the same file
+3. Create new `.yml` files in the `rules/` folder
 
-### Recarregar Configuração
+### Reload Configuration
 
-Após modificar os arquivos, você pode recarregar a configuração do Prometheus sem reiniciar:
+After modifying files, you can reload the Prometheus configuration without restarting:
 
 ```bash
-# Via API do Prometheus
+# Via Prometheus API
 curl -X POST http://localhost:9090/-/reload
 
-# Ou reinicie o container
+# Or restart the container
 docker-compose restart prometheus
 ```
 
-## Tipos de Jogos Suportados
+## Supported Game Types
 
-Veja a lista completa em: https://github.com/gamedig/node-gamedig#games-list
+See the complete list at: https://github.com/gamedig/node-gamedig#games-list
 
-Alguns exemplos populares:
+Some popular examples:
 - `cs2` - Counter-Strike 2
 - `csgo` - Counter-Strike: Global Offensive
 - `minecraft` - Minecraft
@@ -265,4 +265,3 @@ Alguns exemplos populares:
 - `rust` - Rust
 - `ark` - ARK: Survival Evolved
 - `valheim` - Valheim
-

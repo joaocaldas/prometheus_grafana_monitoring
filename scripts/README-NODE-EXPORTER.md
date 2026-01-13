@@ -1,29 +1,29 @@
-# Guia de Instalação do Node Exporter
+# Node Exporter Installation Guide
 
-Este guia explica como instalar e configurar o Node Exporter como serviço systemd para garantir que fique online 100% do tempo.
+This guide explains how to install and configure Node Exporter as a systemd service to ensure 100% uptime.
 
-## Instalação Automática (Recomendado)
+## Automatic Installation (Recommended)
 
-Execute o script de instalação:
+Run the installation script:
 
 ```bash
-# No servidor Linux onde deseja instalar o Node Exporter
+# On the Linux server where you want to install Node Exporter
 sudo bash scripts/install-node-exporter.sh
 ```
 
-O script irá:
-- ✅ Baixar a versão mais recente do Node Exporter
-- ✅ Criar usuário e grupo dedicados
-- ✅ Instalar o binário
-- ✅ Configurar como serviço systemd com restart automático
-- ✅ Habilitar para iniciar no boot
-- ✅ Configurar segurança e limites de recursos
+The script will:
+- ✅ Download the latest version of Node Exporter
+- ✅ Create dedicated user and group
+- ✅ Install the binary
+- ✅ Configure as systemd service with automatic restart
+- ✅ Enable to start on boot
+- ✅ Configure security and resource limits
 
-## Instalação Manual
+## Manual Installation
 
-Se preferir fazer manualmente:
+If you prefer to do it manually:
 
-### 1. Baixar e Instalar
+### 1. Download and Install
 
 ```bash
 cd /tmp
@@ -33,15 +33,15 @@ cd node_exporter-1.7.0.linux-amd64
 sudo cp node_exporter /usr/local/bin/
 ```
 
-### 2. Criar Usuário
+### 2. Create User
 
 ```bash
 sudo useradd --no-create-home --shell /bin/false node_exporter
 ```
 
-### 3. Criar Serviço Systemd
+### 3. Create Systemd Service
 
-Crie o arquivo `/etc/systemd/system/node_exporter.service`:
+Create the file `/etc/systemd/system/node_exporter.service`:
 
 ```ini
 [Unit]
@@ -62,21 +62,21 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=node_exporter
 
-# Segurança
+# Security
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/var/lib/node_exporter
 
-# Limites de recursos
+# Resource limits
 LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-### 4. Habilitar e Iniciar
+### 4. Enable and Start
 
 ```bash
 sudo systemctl daemon-reload
@@ -84,61 +84,61 @@ sudo systemctl enable node_exporter
 sudo systemctl start node_exporter
 ```
 
-## Configurações Importantes para 100% Uptime
+## Important Settings for 100% Uptime
 
-O serviço systemd está configurado com:
+The systemd service is configured with:
 
-- **`Restart=always`**: Reinicia automaticamente se o processo parar
-- **`RestartSec=5`**: Aguarda 5 segundos antes de reiniciar
-- **`After=network-online.target`**: Aguarda a rede estar pronta antes de iniciar
-- **`WantedBy=multi-user.target`**: Inicia automaticamente no boot do sistema
+- **`Restart=always`**: Automatically restarts if the process stops
+- **`RestartSec=5`**: Waits 5 seconds before restarting
+- **`After=network-online.target`**: Waits for network to be ready before starting
+- **`WantedBy=multi-user.target`**: Automatically starts on system boot
 
-## Comandos Úteis
+## Useful Commands
 
-### Verificar Status
+### Check Status
 
 ```bash
 sudo systemctl status node_exporter
 ```
 
-### Ver Logs
+### View Logs
 
 ```bash
-# Logs em tempo real
+# Real-time logs
 sudo journalctl -u node_exporter -f
 
-# Últimas 100 linhas
+# Last 100 lines
 sudo journalctl -u node_exporter -n 100
 
-# Logs desde hoje
+# Logs since today
 sudo journalctl -u node_exporter --since today
 ```
 
-### Reiniciar Serviço
+### Restart Service
 
 ```bash
 sudo systemctl restart node_exporter
 ```
 
-### Parar Serviço
+### Stop Service
 
 ```bash
 sudo systemctl stop node_exporter
 ```
 
-### Desabilitar Inicialização Automática
+### Disable Automatic Startup
 
 ```bash
 sudo systemctl disable node_exporter
 ```
 
-### Verificar se está Respondendo
+### Verify it's Responding
 
 ```bash
 curl http://localhost:9100/metrics
 ```
 
-## Configurar Firewall
+## Configure Firewall
 
 ### UFW (Ubuntu/Debian)
 
@@ -161,18 +161,18 @@ sudo iptables -A INPUT -p tcp --dport 9100 -j ACCEPT
 sudo iptables-save > /etc/iptables/rules.v4
 ```
 
-## Adicionar ao Prometheus
+## Add to Prometheus
 
-Após instalar, adicione o servidor ao arquivo `prometheus/linux-targets.json`:
+After installation, add the server to the `prometheus/linux-targets.json` file:
 
 ```json
 [
   {
-    "targets": ["IP_DO_SERVIDOR:9100"],
+    "targets": ["SERVER_IP:9100"],
     "labels": {
-      "name": "Nome do Servidor",
+      "name": "Server Name",
       "os": "linux",
-      "hostname": "hostname-do-servidor"
+      "hostname": "server-hostname"
     }
   }
 ]
@@ -180,93 +180,88 @@ Após instalar, adicione o servidor ao arquivo `prometheus/linux-targets.json`:
 
 ## Troubleshooting
 
-### Serviço não inicia
+### Service won't start
 
-1. Verifique os logs:
+1. Check logs:
    ```bash
    sudo journalctl -u node_exporter -n 50
    ```
 
-2. Verifique se o binário existe:
+2. Verify binary exists:
    ```bash
    ls -la /usr/local/bin/node_exporter
    ```
 
-3. Verifique permissões:
+3. Check permissions:
    ```bash
    sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter
    sudo chmod 755 /usr/local/bin/node_exporter
    ```
 
-### Porta já em uso
+### Port already in use
 
-Se a porta 9100 já estiver em uso:
+If port 9100 is already in use:
 
-1. Verifique qual processo está usando:
+1. Check which process is using it:
    ```bash
    sudo netstat -tlnp | grep 9100
-   # ou
+   # or
    sudo ss -tlnp | grep 9100
    ```
 
-2. Pare o processo ou configure o Node Exporter para usar outra porta:
+2. Stop the process or configure Node Exporter to use another port:
    ```bash
-   # Edite o serviço systemd e adicione --web.listen-address=:9101
+   # Edit the systemd service and add --web.listen-address=:9101
    sudo systemctl edit node_exporter
    ```
 
-### Serviço reinicia constantemente
+### Service keeps restarting
 
-1. Verifique os logs para identificar o erro:
+1. Check logs to identify the error:
    ```bash
    sudo journalctl -u node_exporter -f
    ```
 
-2. Verifique se há problemas de permissão:
+2. Check for permission issues:
    ```bash
    sudo -u node_exporter /usr/local/bin/node_exporter
    ```
 
-## Atualizar Node Exporter
+## Update Node Exporter
 
-Para atualizar para uma versão mais recente:
+To update to a newer version:
 
-1. Pare o serviço:
+1. Stop the service:
    ```bash
    sudo systemctl stop node_exporter
    ```
 
-2. Execute o script de instalação novamente (ele detectará a instalação existente)
+2. Run the installation script again (it will detect existing installation)
 
-3. Ou faça manualmente:
+3. Or do it manually:
    ```bash
-   # Baixe a nova versão
+   # Download new version
    cd /tmp
-   wget https://github.com/prometheus/node_exporter/releases/download/vNOVA_VERSAO/node_exporter-NOVA_VERSAO.linux-amd64.tar.gz
-   tar xzf node_exporter-NOVA_VERSAO.linux-amd64.tar.gz
-   cd node_exporter-NOVA_VERSAO.linux-amd64
+   wget https://github.com/prometheus/node_exporter/releases/download/vNEW_VERSION/node_exporter-NEW_VERSION.linux-amd64.tar.gz
+   tar xzf node_exporter-NEW_VERSION.linux-amd64.tar.gz
+   cd node_exporter-NEW_VERSION.linux-amd64
    
-   # Substitua o binário
+   # Replace binary
    sudo cp node_exporter /usr/local/bin/
    sudo chown node_exporter:node_exporter /usr/local/bin/node_exporter
    
-   # Reinicie o serviço
+   # Restart service
    sudo systemctl start node_exporter
    ```
 
-## Segurança
+## Security
 
-O serviço está configurado com várias medidas de segurança:
+The service is configured with several security measures:
 
-- Executa como usuário não-privilegiado (`node_exporter`)
-- `NoNewPrivileges=true`: Previne escalação de privilégios
-- `ProtectSystem=strict`: Protege diretórios do sistema
-- `ProtectHome=true`: Protege diretórios home
-- `PrivateTmp=true`: Isola diretório temporário
+- Runs as non-privileged user (`node_exporter`)
+- `NoNewPrivileges=true`: Prevents privilege escalation
+- `ProtectSystem=strict`: Protects system directories
+- `ProtectHome=true`: Protects home directories
+- `PrivateTmp=true`: Isolates temporary directory
 
-Essas configurações garantem que mesmo que o Node Exporter seja comprometido, o impacto será limitado.
-
-
-
-
-
+These settings ensure that even if Node Exporter is compromised, the impact will be limited.

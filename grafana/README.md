@@ -1,97 +1,103 @@
-# Configuração do Grafana
+# Grafana Configuration
 
-Esta pasta contém a configuração do Grafana para monitoramento dos servidores de jogos.
+This folder contains the Grafana configuration for monitoring game servers and infrastructure.
 
-## Estrutura
+## Structure
 
 ```
 grafana/
 ├── dashboards/
-│   └── game-servers.json          # Dashboard principal
+│   └── game-servers.json          # Main dashboard
 ├── provisioning/
 │   ├── datasources/
-│   │   └── prometheus.yml         # Configuração do datasource Prometheus
+│   │   └── prometheus.yml         # Prometheus datasource configuration
 │   └── dashboards/
-│       └── default.yml            # Configuração de provisionamento de dashboards
+│       └── default.yml            # Dashboard provisioning configuration
 ```
 
-## Acesso
+## Access
 
 - **URL**: http://localhost:3001
-- **Usuário padrão**: `admin`
-- **Senha padrão**: `admin` (será solicitado para alterar no primeiro login)
+- **Default user**: `admin`
+- **Default password**: `admin` (you will be prompted to change it on first login)
 
 ## Datasource
 
-O datasource do Prometheus é configurado automaticamente via provisionamento:
-- **Nome**: Prometheus
-- **URL**: http://prometheus:9090 (comunicação interna Docker)
+The Prometheus datasource is configured automatically via provisioning:
+- **Name**: Prometheus
+- **URL**: http://prometheus:9090 (internal Docker communication)
 - **UID**: prometheus
 
-## Dashboard
+## Dashboards
 
-O dashboard "Game Servers Monitoring" é carregado automaticamente e inclui:
+The following dashboards are automatically loaded:
 
-1. **Status dos Servidores** - Indicadores visuais (verde/vermelho)
-2. **Jogadores Online** - Gráfico de linha por servidor
-3. **Ocupação dos Servidores** - Gauge com percentual
-4. **Latência (Ping)** - Gráfico de ping por servidor
-5. **Tabela de Servidores** - Visão geral em tabela
-6. **Jogadores vs Bots** - Gráfico de barras
-7. **Taxa de Erros** - Monitoramento de erros de consulta
+1. **Game Servers Monitoring** - Overview of all game servers
+2. **Game Servers Per Server** - Individual game server details
+3. **Server Monitoring** - Overview of all Linux/Windows servers
+4. **Server Monitoring Per Server** - Individual server details
+5. **ICMP Monitoring** - Network connectivity monitoring
+
+Each dashboard includes:
+- **Server Status** - Visual indicators (green/red)
+- **Online Players** - Line chart per server
+- **Server Occupancy** - Gauge with percentage
+- **Latency (Ping)** - Ping chart per server
+- **Server Table** - Overview table
+- **Players vs Bots** - Bar chart
+- **Error Rate** - Query error monitoring
 
 ## Troubleshooting
 
-### Datasource não encontrado
+### Datasource not found
 
-Se aparecer "datasource prometheus not found":
+If you see "datasource prometheus not found":
 
-1. Verifique se o Prometheus está rodando:
+1. Check if Prometheus is running:
 ```bash
 docker compose ps prometheus
 ```
 
-2. Reinicie o Grafana:
+2. Restart Grafana:
 ```bash
 docker compose restart grafana
 ```
 
-3. Verifique os logs do Grafana:
+3. Check Grafana logs:
 ```bash
 docker compose logs grafana | grep -i datasource
 ```
 
-4. Acesse o Grafana e vá em **Configuration → Data Sources** para verificar se o Prometheus está listado
+4. Access Grafana and go to **Configuration → Data Sources** to verify if Prometheus is listed
 
-### Dashboard não aparece
+### Dashboard not appearing
 
-1. Verifique se o arquivo está no lugar correto:
+1. Check if the file is in the correct location:
 ```bash
 ls -la grafana/dashboards/
 ```
 
-2. Reinicie o Grafana:
+2. Restart Grafana:
 ```bash
 docker compose restart grafana
 ```
 
-3. Acesse o Grafana e vá em **Dashboards → Browse** para verificar se o dashboard está listado
+3. Access Grafana and go to **Dashboards → Browse** to verify if the dashboard is listed
 
-## Personalização
+## Customization
 
-### Alterar senha do admin
+### Change admin password
 
-Edite o `docker-compose.yml` e altere:
+Edit `docker-compose.yml` and change:
 ```yaml
-- GF_SECURITY_ADMIN_PASSWORD=sua_senha_aqui
+- GF_SECURITY_ADMIN_PASSWORD=your_password_here
 ```
 
-Depois reinicie:
+Then restart:
 ```bash
 docker compose restart grafana
 ```
 
-### Adicionar mais dashboards
+### Add more dashboards
 
-Coloque arquivos JSON na pasta `grafana/dashboards/` e reinicie o Grafana.
-
+Place JSON files in the `grafana/dashboards/` folder and restart Grafana.
