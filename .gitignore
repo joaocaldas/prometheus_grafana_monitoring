@@ -9,3 +9,6 @@ grafana-data/
 # Arquivos de targets (contêm informações sensíveis)
 prometheus/targets/*.json
 
+# gs_exporter está em um repositório separado
+gs_exporter/
+
