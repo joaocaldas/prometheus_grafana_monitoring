@@ -1,0 +1,44 @@
+groups:
+  - name: game_servers
+    interval: 30s
+    rules:
+      # Alerta quando servidor está offline
+      - alert: GameServerDown
+        expr: game_server_online == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Servidor de jogo {{ $labels.server_name }} está offline"
+          description: "O servidor {{ $labels.server_name }} ({{ $labels.game }}) em {{ $labels.host }}:{{ $labels.port }} está offline há mais de 1 minuto."
+
+      # Alerta quando servidor está com muitos jogadores
+      - alert: GameServerHighPlayers
+        expr: (game_server_players_current / game_server_players_max) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Servidor {{ $labels.server_name }} está quase cheio"
+          description: "O servidor {{ $labels.server_name }} está com {{ $value | humanizePercentage }} de capacidade ({{ $labels.game_server_players_current }}/{{ $labels.game_server_players_max }} jogadores)."
+
+      # Alerta quando ping está muito alto
+      - alert: GameServerHighPing
+        expr: game_server_ping_ms > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Servidor {{ $labels.server_name }} com ping alto"
+          description: "O servidor {{ $labels.server_name }} está com ping de {{ $value }}ms."
+
+      # Alerta quando há muitos erros de consulta
+      - alert: GameServerQueryErrors
+        expr: rate(game_server_query_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Muitos erros ao consultar servidor {{ $labels.server_name }}"
+          description: "Taxa de erros de consulta para {{ $labels.server_name }} é {{ $value | humanize }} erros/segundo."
+

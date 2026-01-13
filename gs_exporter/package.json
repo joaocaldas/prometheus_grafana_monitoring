@@ -1,0 +1,26 @@
+{
+  "name": "gs-exporter",
+  "version": "1.0.0",
+  "description": "Prometheus exporter para servidores de jogos usando gamedig",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [
+    "prometheus",
+    "exporter",
+    "gamedig",
+    "game-server",
+    "monitoring"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "gamedig": "^4.0.0",
+    "prom-client": "^15.1.0",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0"
+  }
+}
+

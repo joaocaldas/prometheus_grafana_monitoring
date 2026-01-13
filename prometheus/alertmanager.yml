@@ -1,0 +1,58 @@
+global:
+  resolve_timeout: 5m
+
+# Configuração de roteamento de alertas
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default-receiver'
+  routes:
+    - match:
+        alertname: ICMPHostDown
+      receiver: 'icmp-receiver'
+      continue: true
+
+# Configuração de destinatários (receivers)
+receivers:
+  - name: 'default-receiver'
+    # Receiver vazio - os alertas serão apenas armazenados no Alertmanager
+    # Para adicionar notificações, descomente e configure uma das opções abaixo:
+    
+    # Opção 1: Webhook (configure a URL do seu serviço)
+    # webhook_configs:
+    #   - url: 'http://seu-servico:porta/webhook'
+    #     send_resolved: true
+    #     http_config:
+    #       timeout: 10s
+    
+    # Opção 2: Email (configure com suas credenciais SMTP)
+    # email_configs:
+    #   - to: 'admin@example.com'
+    #     from: 'alertmanager@example.com'
+    #     smarthost: 'smtp.example.com:587'
+    #     auth_username: 'user'
+    #     auth_password: 'password'
+    #     headers:
+    #       Subject: 'Alerta: {{ .GroupLabels.alertname }}'
+    
+    # Opção 3: Slack (configure com seu webhook do Slack)
+    # slack_configs:
+    #   - api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
+    #     channel: '#alerts'
+    #     send_resolved: true
+
+  - name: 'icmp-receiver'
+    # Receiver específico para alertas ICMP
+    # Receiver vazio - os alertas serão apenas armazenados no Alertmanager
+    # Para adicionar notificações, descomente e configure uma das opções acima
+
+# Configuração de inibição (para evitar alertas duplicados)
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
