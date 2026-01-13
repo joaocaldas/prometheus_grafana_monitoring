@@ -5,7 +5,7 @@
 
 set -e
 
-PROCESS_EXPORTER_VERSION="0.8.0"
+PROCESS_EXPORTER_VERSION="0.8.7"
 PROCESS_EXPORTER_USER="process_exporter"
 PROCESS_EXPORTER_GROUP="process_exporter"
 INSTALL_DIR="/usr/local/bin"

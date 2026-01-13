@@ -26,9 +26,9 @@ If you prefer to do it manually:
 
 ```bash
 cd /tmp
-wget https://github.com/ncabatoff/process-exporter/releases/download/v0.8.0/process-exporter-0.8.0.linux-amd64.tar.gz
-tar xzf process-exporter-0.8.0.linux-amd64.tar.gz
-cd process-exporter-0.8.0.linux-amd64
+wget https://github.com/ncabatoff/process-exporter/releases/download/v0.8.7/process-exporter-0.8.7.linux-amd64.tar.gz
+tar xzf process-exporter-0.8.7.linux-amd64.tar.gz
+cd process-exporter-0.8.7.linux-amd64
 sudo cp process-exporter /usr/local/bin/
 ```
 
